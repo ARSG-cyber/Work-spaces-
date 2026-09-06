@@ -11,9 +11,9 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
-  currentUser: INITIAL_USERS[0],
+  currentUser: null,
   mockUsers: INITIAL_USERS,
-  isAuthenticated: true,
+  isAuthenticated: false,
   loading: false,
   error: null,
 };
@@ -31,6 +31,11 @@ export const authSlice = createSlice({
       state.currentUser = action.payload;
       state.isAuthenticated = true;
       state.error = null;
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.setItem('WORKSPACE_MANAGER_AUTH_USER_ID', action.payload.id);
+        } catch (_) {}
+      }
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
@@ -40,12 +45,22 @@ export const authSlice = createSlice({
       state.currentUser = null;
       state.isAuthenticated = false;
       state.error = null;
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.removeItem('WORKSPACE_MANAGER_AUTH_USER_ID');
+        } catch (_) {}
+      }
     },
     switchUser: (state, action: PayloadAction<string>) => {
       const found = state.mockUsers.find((u) => u.id === action.payload);
       if (found) {
         state.currentUser = found;
         state.isAuthenticated = true;
+        if (typeof window !== 'undefined') {
+          try {
+            sessionStorage.setItem('WORKSPACE_MANAGER_AUTH_USER_ID', found.id);
+          } catch (_) {}
+        }
       }
     },
     updateProfile: (state, action: PayloadAction<Partial<User>>) => {

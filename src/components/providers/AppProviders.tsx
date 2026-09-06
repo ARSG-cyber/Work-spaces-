@@ -49,10 +49,15 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
     try {
       const persisted = loadPersistedState();
       dispatch(setMockUsers(persisted.users));
-      const currentUser =
-        persisted.users.find((u) => u.id === persisted.currentUserId) || persisted.users[0];
-      if (currentUser) {
-        dispatch(loginSuccess(currentUser));
+      const sessionUserId =
+        typeof window !== 'undefined'
+          ? sessionStorage.getItem('WORKSPACE_MANAGER_AUTH_USER_ID')
+          : null;
+      if (sessionUserId) {
+        const sessionUser = persisted.users.find((u) => u.id === sessionUserId);
+        if (sessionUser) {
+          dispatch(loginSuccess(sessionUser));
+        }
       }
       dispatch(setWorkspaces(persisted.workspaces));
       dispatch(setActiveWorkspaceId(persisted.activeWorkspaceId));
